@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PBCSYSTEM - Educación Especial</title>
+    <link rel="icon" type="image/png" href="LOGO6.png">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .edit-highlight {
+            outline: 2px dashed #f59e0b !important;
+            outline-offset: 4px;
+            cursor: text !important;
+            position: relative;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        .edit-highlight:hover {
+            outline-color: #10b981 !important;
+            background: rgba(16, 185, 129, 0.05);
+        }
+        .edit-highlight:focus {
+            outline-style: solid !important;
+            outline-color: #10b981 !important;
+            background: rgba(16, 185, 129, 0.1);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+        }
+        .edit-highlight[contenteditable="true"] {
+            pointer-events: auto;
+        }
+        .edit-toolbar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #0f172a;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            z-index: 99999;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .edit-toolbar.active {
+            transform: translateX(-50%) translateY(0);
+        }
+        .edit-toolbar .toolbar-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .edit-toolbar .toolbar-label .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulseDot 2s infinite;
+        }
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
+        .edit-toolbar .toolbar-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .edit-toolbar .toolbar-btn.save-btn {
+            background: #10b981;
+            color: white;
+        }
+        .edit-toolbar .toolbar-btn.save-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+        .edit-toolbar .toolbar-btn.reset-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .edit-toolbar .toolbar-btn.reset-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            color: #fca5a5;
+        }
+        .edit-toolbar .toolbar-btn.exit-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .edit-toolbar .toolbar-btn.exit-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .edit-mode-active .edit-highlight {
+            pointer-events: auto;
+        }
+        .edit-mode-active a.edit-highlight {
+            pointer-events: none;
+        }
+        .edit-mode-active .editable-service-card {
+            cursor: pointer;
+        }
+        .edit-mode-active .editable-project-card {
+            cursor: pointer;
+        }
+        .edit-tooltip {
+            position: fixed;
+            background: #0f172a;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            pointer-events: none;
+            z-index: 100000;
+            opacity: 0;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+        .edit-tooltip.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header/Navbar -->
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="logo">
+                    <a href="#">
+                        <img src="LOGO_DE_EDUCACION_ESPECIAL.png" alt="Logo Educación Especial" class="logo-image">
+                        <div class="logo-text">
+                            <span class="logo-title">PBCSYSTEM</span>
+                            <span class="logo-subtitle">Educación Especial</span>
+                        </div>
+                    </a>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="#inicio">Inicio</a></li>
+                    <li><a href="#nosotros">Nosotros</a></li>
+                    <li><a href="#servicios">Servicios</a></li>
+                    <li><a href="#proyectos">Proyectos</a></li>
+                    <li><a href="#contacto">Contacto</a></li>
+                    <li class="theme-toggle-item">
+                        <button class="theme-toggle-btn" id="themeToggle">
+                            <i class="fas fa-moon"></i>
+                            <span>Modo Oscuro</span>
+                        </button>
+                    </li>
+                </ul>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <button class="admin-toggle-btn" id="adminToggle" title="Modo Edición">
+                    <i class="fas fa-pen"></i>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="inicio">
+        <div class="hero-animation">
+            <i class="fas fa-book floating-icon"></i>
+            <i class="fas fa-puzzle-piece floating-icon"></i>
+            <i class="fas fa-heart floating-icon"></i>
+        </div>
+        <div class="hero-content">
+            <h1 class="editable-text" data-field="hero.title">Educación Especial</h1>
+            <p class="subtitle editable-text" data-field="hero.subtitle">Transformando vidas a través de la educación personalizada</p>
+            <p class="description editable-text" data-field="hero.description">Ofrecemos programas educativos especializados diseñados para potenciar las capacidades únicas de cada estudiante, promoviendo la inclusión y el desarrollo integral.</p>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about" id="nosotros">
+        <div class="container">
+            <div class="about-content" id="aboutCardsContainer">
+            </div>
+            <button class="add-about-card-btn" id="addAboutCardBtn" style="display:none;">
+                <i class="fas fa-plus-circle"></i> Agregar Tarjeta
+            </button>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="courses" id="servicios">
+        <div class="container">
+            <h2 class="editable-text" data-field="services.title">Programa Ruta</h2>
+            <div class="courses-grid" id="servicesGrid">
+                <div class="course-card editable-service-card" data-service-index="0">
+                    <button class="card-delete-btn" title="Eliminar servicio" style="display:none;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                     <h3 class="editable-text editable-service-title" data-field="services.0.title">Ruta 1</h3>
+                      <p class="editable-text editable-service-desc" data-field="services.0.description">El salón especial con promoción de grado (SEP) está creado para aquellos estudiantes que en la corriente regular no lograron progresar aún con la provisión de educación diferenciada, acomodos razonables, servicios relacionados y suplementarios, ni equipos de asistencia tecnológica.<br><br>Funcionamiento cognitivo entre 75 a 55<br><br>Reciben un diploma regular, su currículo está diseñado para que el estudiante continúe estudios post-secundarios y/o empleo.<br><br>Los grupos de Ruta 1:<br><br>Trabajan el currículo regular de todas las materias.<br><br>Pueden participar de talleres vocacionales.<br><br>Al graduarse, reciben el diploma regular de cuarto año.</p>
+                </div>
+                <div class="course-card editable-service-card" data-service-index="1">
+                    <button class="card-delete-btn" title="Eliminar servicio" style="display:none;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                     <h3 class="editable-text editable-service-title" data-field="services.1.title">Ruta 2</h3>
+                     <p class="editable-text editable-service-desc" data-field="services.1.description">El salón especial con currículo modificado fue creado para aquellos estudiantes que presentan una condición de nivel de gravedad moderado<br><br>Funcionamiento cognitivo<br>entre 54-39<br><br>El programa de estudios de esta ruta provee a los estudiante acceso al currículo regular de forma modificada. El programa de clases está diseñado para que el estudiante pueda cursar un estudio técnico o una certificación o para obtener un empleo dirigido.<br><br>Trabajan destrezas académicas (9no a 12mo)</p>
+                </div>
+                <div class="course-card editable-service-card" data-service-index="2">
+                    <button class="card-delete-btn" title="Eliminar servicio" style="display:none;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                     <h3 class="editable-text editable-service-title" data-field="services.2.title">Ruta 3</h3>
+                     <p class="editable-text editable-service-desc" data-field="services.2.description">El programa de estudios de esta ruta provee a los estudiante acceso al curriculo regular, pero con unas destrezas alternas o específicas. Es recomendado para estudiantes con un nivel de gravedad severo o profundo. El programa de clases está diseñado para que el estudiante realice transición a un hogar asistido o para que pueda participar de experiencias de empleo asistido.<br><br>Funcionamiento cognitivo<br><br>entre 38-0<br><br>Los estudiantes de Ruta 3:<br><br>Estudiantes desde ano hasta los 21 años inclusive.<br><br>Trabaja destrezas académicas, instruccionales para la vida diaria.<br><br>Destrezas de vida independiente (adiestramiento, empleo y otras experiencias)</p>
+                </div>
+            </div>
+            <button class="add-card-btn" id="addServiceBtn" style="display:none;">
+                <i class="fas fa-plus-circle"></i> Agregar Servicio
+            </button>
+        </div>
+    </section>
+
+    <!-- Student Projects Section -->
+    <section class="student-projects" id="proyectos">
+        <div class="container">
+            <h2 class="editable-text" data-field="projects.title">Información sobre la Educación Especial</h2>
+            <div class="projects-grid" id="projectsGrid">
+                <div class="project-card editable-project-card" data-project-index="0">
+                    <button class="card-delete-btn" title="Eliminar proyecto" style="display:none;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <div class="project-content">
+                        <h3 class="editable-text editable-project-title" data-field="projects.0.title">¿Qué es?</h3>
+                        <p class="project-description editable-text editable-project-desc" data-field="projects.0.description">Es un programa que ofrece servicios a los estudiantes que presentan un impedimento y este les afecta o limita sustancialmente en su progreso académico. Está reglamentado por la Ley Federal 108-446, conocida como Ley para el mejoramiento de la educación de las personas con discapacidad (IDEA, por sus siglas en inglés) y diversas leyes estatales como la Ley # 51 del 1996, Ley # 263 del 2006, Ley # 53 del 2016, entre otras. Educación especial no es un lugar. Es una intervención más intensiva que se le ofrecen a los estudiantes con una discapacidad a través de servicios establecidos según la necesidad individual.</p>
+                    </div>
+                </div>
+            </div>
+            <h2 class="editable-text" data-field="about.title">Trastorno del Espectro Autista</h2>
+            <div class="about-card editable-about-card" data-about-index="0">
+                <button class="card-delete-btn" title="Eliminar tarjeta" style="display:none;">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <p class="editable-text editable-about-desc" data-field="about.0.description">El trastorno del espectro autista es una afección relacionada con el desarrollo del cerebro que afecta la forma en que las personas ven a los demás y socializan con ellos. Esto causa problemas en la comunicación y en llevarse bien con los demás. La afección también incluye patrones de comportamiento limitados y repetidos. El término "espectro" en el trastorno del espectro autista se refiere a la amplia gama de síntomas y la gravedad de estos síntomas.<br><br>El trastorno del espectro autista incluye afecciones que alguna vez se consideraron separadas: el autismo, el síndrome de Asperger, el trastorno desintegrativo infantil y una forma de trastorno del desarrollo generalizado que no está especificado.<br><br>El trastorno del espectro autista comienza en la primera infancia. Con el tiempo, puede causarle dificultades a la persona para desenvolverse en la sociedad. Por ejemplo, las personas con trastorno del espectro autista pueden tener problemas para relacionarse socialmente o en los estudios o el trabajo. A menudo, los niños muestran síntomas de autismo durante el primer año de vida. Un pequeño número de niños con esta afección parecen desarrollarse como se espera durante el primer año. Luego, entre los 18 y los 24 meses de edad, pueden perder algunas habilidades y desarrollar síntomas de autismo.</p>
+            </div>
+            <button class="add-card-btn" id="addProjectBtn" style="display:none;">
+                <i class="fas fa-plus-circle"></i> Agregar Proyecto
+            </button>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact" id="contacto">
+        <div class="container">
+            <h2 class="editable-text" data-field="contact.title">Contáctanos</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="info-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h4>Ubicación</h4>
+                            <p class="editable-text" data-field="contact.address">Carretera 156 salida hacia Comerío, Barranquitas, P. R.</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <h4>Teléfono</h4>
+                            <p class="editable-text" data-field="contact.phone">+1 787-857-2897</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h4>Dirección postal</h4>
+                            <p class="editable-text" data-field="contact.email">Box 1030 Barranquitas, P. R. 00794</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3 class="editable-text" data-field="footer.title">PBCSYSTEM</h3>
+                    <p class="editable-text" data-field="footer.description">Educación especial inclusiva de calidad, transformando vidas a través de la educación personalizada.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="#inicio">Inicio</a></li>
+                        <li><a href="#nosotros">Nosotros</a></li>
+                        <li><a href="#servicios">Servicios</a></li>
+                        <li><a href="#proyectos">Proyectos</a></li>
+                        <li><a href="#contacto">Contacto</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Servicios</h4>
+                    <ul>
+                        <li><a href="#">Evaluación Psicopedagógica</a></li>
+                        <li><a href="#">Terapia Educativa</a></li>
+                        <li><a href="#">Talleres de Inclusión</a></li>
+                        <li><a href="#">Tecnología Asistiva</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Síguenos</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="editable-text" data-field="footer.copyright">&copy; 2026 PBCSYSTEM. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Edit Toolbar -->
+    <div class="edit-toolbar" id="editToolbar">
+        <div class="toolbar-label">
+            <div class="pulse-dot"></div>
+            Modo Edición Activo
+        </div>
+        <span id="saveStatus" style="color: #10b981; font-weight: 600; font-size: 0.85rem;"></span>
+        <button class="toolbar-btn save-btn" id="toolbarSave">
+            <i class="fas fa-check"></i> Guardar
+        </button>
+        <button class="toolbar-btn reset-btn" id="toolbarReset">
+            <i class="fas fa-undo"></i> Restablecer
+        </button>
+        <button class="toolbar-btn exit-btn" id="toolbarExit">
+            <i class="fas fa-times"></i> Salir
+        </button>
+    </div>
+
+    <div class="edit-tooltip" id="editTooltip">Click para editar</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+        // ==================== INLINE EDIT MODE ====================
+        const adminToggle = document.getElementById('adminToggle');
+        const editToolbar = document.getElementById('editToolbar');
+        const editTooltip = document.getElementById('editTooltip');
+        const toolbarSave = document.getElementById('toolbarSave');
+        const toolbarReset = document.getElementById('toolbarReset');
+        const toolbarExit = document.getElementById('toolbarExit');
+        let editMode = false;
+        let saveTimeout;
+        let originalContent = {};
+
+        if (typeof localStorage === 'undefined') {
+            console.warn('localStorage is not available. Changes will not persist across page reloads.');
+        }
+
+        const defaultContent = {
+            'hero.title': 'Educación Especial',
+            'hero.subtitle': 'Transformando vidas a través de la educación personalizada',
+            'hero.description': 'Ofrecemos programas educativos especializados diseñados para potenciar las capacidades únicas de cada estudiante, promoviendo la inclusión y el desarrollo integral.',
+            'about.title': 'Trastorno del Espectro Autista',
+            'about.0.description': 'El trastorno del espectro autista es una afección relacionada con el desarrollo del cerebro que afecta la forma en que las personas ven a los demás y socializan con ellos. Esto causa problemas en la comunicación y en llevarse bien con los demás. La afección también incluye patrones de comportamiento limitados y repetidos. El término "espectro" en el trastorno del espectro autista se refiere a la amplia gama de síntomas y la gravedad de estos síntomas.\n\nEl trastorno del espectro autista incluye afecciones que alguna vez se consideraron separadas: el autismo, el síndrome de Asperger, el trastorno desintegrativo infantil y una forma de trastorno del desarrollo generalizado que no está especificado.\n\nEl trastorno del espectro autista comienza en la primera infancia. Con el tiempo, puede causarle dificultades a la persona para desenvolverse en la sociedad. Por ejemplo, las personas con trastorno del espectro autista pueden tener problemas para relacionarse socialmente o en los estudios o el trabajo. A menudo, los niños muestran síntomas de autismo durante el primer año de vida. Un pequeño número de niños con esta afección parecen desarrollarse como se espera durante el primer año. Luego, entre los 18 y los 24 meses de edad, pueden perder algunas habilidades y desarrollar síntomas de autismo.',
+            'services.title': 'Programa Ruta',
+             'services.0.title': 'Ruta 1',
+             'services.0.description': '',
+             'services.1.title': 'Ruta 2',
+             'services.1.description': 'El salón especial con currículo modificado fue creado para aquellos estudiantes que presentan una condición de nivel de gravedad moderado\n\nFuncionamiento cognitivo\nentre 54-39\n\nEl programa de estudios de esta ruta provee a los estudiante acceso al currículo regular de forma modificada. El programa de clases está diseñado para que el estudiante pueda cursar un estudio técnico o una certificación o para obtener un empleo dirigido.\n\nTrabajan destrezas académicas (9no a 12mo)',
+             'services.2.title': 'Ruta 3',
+             'services.2.description': 'El programa de estudios de esta ruta provee a los estudiante acceso al curriculo regular, pero con unas destrezas alternas o específicas. Es recomendado para estudiantes con un nivel de gravedad severo o profundo. El programa de clases está diseñado para que el estudiante realice transición a un hogar asistido o para que pueda participar de experiencias de empleo asistido.\n\nFuncionamiento cognitivo\n\nentre 38-0\n\nLos estudiantes de Ruta 3:\n\nEstudiantes desde ano hasta los 21 años inclusive.\n\nTrabaja destrezas académicas, instruccionales para la vida diaria.\n\nDestrezas de vida independiente (adiestramiento, empleo y otras experiencias)',
+            'projects.title': 'Información sobre la Educación Especial',
+            'projects.0.title': '¿Qué es?',
+            'projects.0.description': 'Es un programa que ofrece servicios a los estudiantes que presentan un impedimento y este les afecta o limita sustancialmente en su progreso académico. Está reglamentado por la Ley Federal 108-446, conocida como Ley para el mejoramiento de la educación de las personas con discapacidad (IDEA, por sus siglas en inglés) y diversas leyes estatales como la Ley # 51 del 1996, Ley # 263 del 2006, Ley # 53 del 2016, entre otras. Educación especial no es un lugar. Es una intervención más intensiva que se le ofrecen a los estudiantes con una discapacidad a través de servicios establecidos según la necesidad individual.',
+            'projects.1.title': 'Servicio de terapia',
+            'projects.1.description': 'Uso de la música y el ritmo para desarrollar habilidades de comunicación, coordinación y expresión emocional.',
+            'contact.title': 'Contáctanos',
+            'contact.address': 'Carretera 156 salida hacia Comerío, Barranquitas, P. R.',
+            'contact.phone': '+1 787-857-2897',
+            'contact.email': 'Box 1030 Barranquitas, P. R. 00794',
+            'footer.title': 'PBCSYSTEM',
+            'footer.description': 'Educación especial inclusiva de calidad, transformando vidas a través de la educación personalizada.',
+            'footer.copyright': '© 2026 PBCSYSTEM. Todos los derechos reservados.'
+        };
+
+        function showNotification(message, type = 'info') {
+            const existing = document.querySelector('.edit-notification');
+            if (existing) existing.remove();
+            const notification = document.createElement('div');
+            notification.className = 'edit-notification edit-notification-' + type;
+            const iconMap = { success: 'check-circle', error: 'exclamation-circle', info: 'info-circle' };
+            notification.innerHTML = '<i class="fas fa-' + (iconMap[type] || 'info-circle') + '"></i> ' + message;
+            const bgMap = { success: '#10b981', error: '#ef4444', info: '#0ea5e9' };
+            Object.assign(notification.style, {
+                position: 'fixed',
+                top: '20px',
+                right: '20px',
+                padding: '12px 24px',
+                borderRadius: '10px',
+                color: 'white',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                zIndex: '1000001',
+                animation: 'slideInRight 0.3s ease',
+                boxShadow: '0 5px 15px rgba(0,0,0,0.2)',
+                background: bgMap[type] || '#0ea5e9'
+            });
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s';
+                setTimeout(() => notification.remove(), 300);
+            }, 2500);
+        }
+
+        function showSaveStatus(text) {
+            const el = document.getElementById('saveStatus');
+            if (el) {
+                el.textContent = text;
+                setTimeout(() => { el.textContent = ''; }, 2000);
+            }
+        }
+
+        function buildConfig() {
+            const editableElements = document.querySelectorAll('.editable-text');
+            const config = {};
+            
+            editableElements.forEach(el => {
+                const field = el.dataset.field;
+                if (field) {
+                    config[field] = el.innerText.trim();
+                }
+            });
+            
+            document.querySelectorAll('.editable-service-card').forEach((card, index) => {
+                const icon = card.querySelector('.editable-service-icon');
+                if (icon) {
+                    config['services.' + index + '.icon'] = icon.className.replace('fas ', '').trim();
+                }
+            });
+            
+            document.querySelectorAll('.editable-project-card').forEach((card, index) => {
+                const icon = card.querySelector('.editable-project-icon');
+                if (icon) {
+                    config['projects.' + index + '.icon'] = icon.className.replace('fas ', '').trim();
+                }
+                const tagsContainer = card.querySelector('.editable-project-tags');
+                if (tagsContainer) {
+                    const tags = Array.from(tagsContainer.querySelectorAll('.tech-tag')).map(t => t.textContent.trim());
+                    config['projects.' + index + '.tags'] = tags.join(', ');
+                }
+            });
+            
+            document.querySelectorAll('.editable-about-card').forEach((card, index) => {
+                const icon = card.querySelector('.editable-about-icon');
+                if (icon) {
+                    config['about.' + index + '.icon'] = icon.className.replace('fas ', '').trim();
+                }
+                const title = card.querySelector('.editable-about-title');
+                if (title) {
+                    config['about.' + index + '.title'] = title.innerText.trim();
+                }
+                const desc = card.querySelector('.editable-about-desc');
+                if (desc) {
+                    config['about.' + index + '.description'] = desc.innerText.trim();
+                }
+            });
+            
+            return config;
+        }
+
+        function saveContent() {
+            const config = buildConfig();
+            const json = JSON.stringify(config);
+            
+            function doSave() {
+                try {
+                    localStorage.setItem('siteContent', json);
+                    localStorage.setItem('siteContentTimestamp', Date.now().toString());
+                    window.name = json;
+                    document.cookie = 'siteContent=' + encodeURIComponent(json) + '; path=/; max-age=' + (365 * 24 * 60 * 60);
+                    console.log('Content saved to localStorage, window.name, and cookie');
+                    showSaveStatus('Guardado');
+                } catch (e) {
+                    console.error('Error saving:', e);
+                    showNotification('Error al guardar', 'error');
+                    showSaveStatus('Error');
+                }
+            }
+            
+            doSave();
+            
+            fetch('/api/content', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: json
+            }).then(res => {
+                if (res.ok) {
+                    console.log('Content saved to server');
+                } else {
+                    console.warn('Server responded with ' + res.status);
+                }
+            }).catch(e => {
+                console.warn('Could not save to server:', e);
+            });
+        }
+
+        async function loadContent(retries = 3) {
+            let serverConfig = null;
+            let localConfig = null;
+            let windowNameConfig = null;
+            let cookieConfig = null;
+            
+            try {
+                const res = await fetch('/api/content');
+                if (res.ok) {
+                    serverConfig = await res.json();
+                    if (serverConfig && Object.keys(serverConfig).length > 0) {
+                        console.log('Content loaded from server:', Object.keys(serverConfig).length, 'fields');
+                    } else {
+                        serverConfig = null;
+                    }
+                } else {
+                    console.warn('Server responded with status:', res.status);
+                }
+            } catch (e) {
+                console.warn('Could not load from server (server may not be running):', e.message);
+            }
+            
+            try {
+                const saved = localStorage.getItem('siteContent');
+                if (saved) {
+                    localConfig = JSON.parse(saved);
+                    console.log('Content loaded from localStorage:', Object.keys(localConfig).length, 'fields');
+                }
+            } catch (e) {
+                console.error('Error loading localStorage:', e);
+            }
+            
+            try {
+                if (window.name && window.name.trim().startsWith('{')) {
+                    windowNameConfig = JSON.parse(window.name);
+                    console.log('Content loaded from window.name:', Object.keys(windowNameConfig).length, 'fields');
+                }
+            } catch (e) {
+                console.error('Error loading window.name:', e);
+            }
+            
+            try {
+                const match = document.cookie.match(/siteContent=([^;]+)/);
+                if (match) {
+                    cookieConfig = JSON.parse(decodeURIComponent(match[1]));
+                    console.log('Content loaded from cookie:', Object.keys(cookieConfig).length, 'fields');
+                }
+            } catch (e) {
+                console.error('Error loading cookie:', e);
+            }
+            
+            let config = {};
+            if (serverConfig) Object.assign(config, serverConfig);
+            if (localConfig) Object.assign(config, localConfig);
+            if (windowNameConfig) Object.assign(config, windowNameConfig);
+            if (cookieConfig) Object.assign(config, cookieConfig);
+            
+            console.log('Total config fields to apply:', Object.keys(config).length);
+            
+            if (Object.keys(config).length === 0) {
+                console.log('No saved content found to apply');
+                return;
+            }
+            
+            try {
+                applyConfigToDOM(config);
+                console.log('Saved content applied successfully');
+            } catch (e) {
+                console.error('Error applying content:', e);
+            }
+        }
+
+        function applyConfigToDOM(config) {
+            // Load all text content from data-field attributes
+            Object.entries(config).forEach(([field, value]) => {
+                if (field.endsWith('.icon') || field.endsWith('.tags')) return;
+                if (field === 'contact.phone') return;
+                const el = document.querySelector('[data-field="' + field + '"]');
+                if (!el) return;
+                if (el.querySelector('br') || (typeof value === 'string' && value.includes('\n'))) {
+                    el.innerHTML = String(value).replace(/\n/g, '<br>');
+                } else {
+                    el.innerText = value;
+                }
+            });
+
+            // Force contact.phone to the correct value after config is applied
+            const phoneEl = document.querySelector('[data-field="contact.phone"]');
+            if (phoneEl) phoneEl.innerText = '+1 787-857-2897';
+
+            // Load about card icons
+            document.querySelectorAll('.editable-about-card').forEach((card, index) => {
+                const iconField = 'about.' + index + '.icon';
+                if (config[iconField]) {
+                    const icon = card.querySelector('.editable-about-icon');
+                    if (icon) icon.className = 'fas ' + config[iconField];
+                }
+            });
+
+            // Load service icons
+            document.querySelectorAll('.editable-service-card').forEach((card, index) => {
+                const iconField = 'services.' + index + '.icon';
+                if (config[iconField]) {
+                    const icon = card.querySelector('.editable-service-icon');
+                    if (icon) icon.className = 'fas ' + config[iconField];
+                }
+            });
+
+            // Load project icons and tags
+            document.querySelectorAll('.editable-project-card').forEach((card, index) => {
+                const iconField = 'projects.' + index + '.icon';
+                if (config[iconField]) {
+                    const icon = card.querySelector('.editable-project-icon');
+                    if (icon) icon.className = 'fas ' + config[iconField];
+                }
+                const tagsField = 'projects.' + index + '.tags';
+                if (config[tagsField]) {
+                    const tagsContainer = card.querySelector('.editable-project-tags');
+                    if (tagsContainer) {
+                        const tags = String(config[tagsField]).split(',').map(t => t.trim()).filter(t => t);
+                        tagsContainer.innerHTML = tags.map(tag => '<span class="tech-tag">' + tag + '</span>').join('');
+                    }
+                }
+            });
+        }
+
+        function enterEditMode() {
+            if (editMode) return;
+            editMode = true;
+            document.body.classList.add('edit-mode-active');
+            editToolbar.classList.add('active');
+
+            // Store original content
+            document.querySelectorAll('.editable-text').forEach(el => {
+                const field = el.dataset.field;
+                if (field) {
+                    originalContent[field] = el.innerText.trim();
+                }
+                el.classList.add('edit-highlight');
+                el.contentEditable = 'true';
+            });
+
+            document.querySelectorAll('.editable-service-card, .editable-project-card').forEach(card => {
+                card.classList.add('edit-highlight');
+            });
+
+            // Show add about card button and delete buttons
+            const addAboutBtn = document.getElementById('addAboutCardBtn');
+            if (addAboutBtn) addAboutBtn.style.display = 'block';
+            
+            document.querySelectorAll('.editable-about-card').forEach(card => {
+                card.classList.add('edit-highlight');
+                const deleteBtn = card.querySelector('.card-delete-btn');
+                if (deleteBtn) deleteBtn.style.display = 'flex';
+                const icon = card.querySelector('.editable-about-icon');
+                if (icon) {
+                    icon.contentEditable = 'false';
+                    icon.style.cursor = 'pointer';
+                    icon.title = 'Click para cambiar icono';
+                }
+            });
+
+            // Show service add/delete buttons
+            const addServiceBtn = document.getElementById('addServiceBtn');
+            if (addServiceBtn) addServiceBtn.style.display = 'block';
+            
+            document.querySelectorAll('.editable-service-card').forEach(card => {
+                card.classList.add('edit-highlight');
+                const deleteBtn = card.querySelector('.card-delete-btn');
+                if (deleteBtn) deleteBtn.style.display = 'flex';
+                const icon = card.querySelector('.editable-service-icon');
+                if (icon) {
+                    icon.style.cursor = 'pointer';
+                    icon.title = 'Click para cambiar icono';
+                }
+            });
+
+            // Show project add/delete buttons
+            const addProjectBtn = document.getElementById('addProjectBtn');
+            if (addProjectBtn) addProjectBtn.style.display = 'block';
+            
+            document.querySelectorAll('.editable-project-card').forEach(card => {
+                card.classList.add('edit-highlight');
+                const deleteBtn = card.querySelector('.card-delete-btn');
+                if (deleteBtn) deleteBtn.style.display = 'flex';
+                const icon = card.querySelector('.editable-project-icon');
+                if (icon) {
+                    icon.style.cursor = 'pointer';
+                    icon.title = 'Click para cambiar icono';
+                }
+            });
+
+            // Change toggle button icon
+            const toggleIcon = adminToggle.querySelector('i');
+            if (toggleIcon) {
+                toggleIcon.className = 'fas fa-save';
+            }
+
+            showNotification('Modo edición activado - Click en cualquier texto para editar', 'info');
+        }
+
+        function exitEditMode() {
+            if (!editMode) return;
+            editMode = false;
+            document.body.classList.remove('edit-mode-active');
+            editToolbar.classList.remove('active');
+
+            document.querySelectorAll('.editable-text').forEach(el => {
+                el.classList.remove('edit-highlight');
+                el.contentEditable = 'false';
+            });
+
+            document.querySelectorAll('.editable-service-card, .editable-project-card').forEach(card => {
+                card.classList.remove('edit-highlight');
+            });
+
+            // Hide add about card button and delete buttons
+            const addAboutBtn = document.getElementById('addAboutCardBtn');
+            if (addAboutBtn) addAboutBtn.style.display = 'none';
+            
+            document.querySelectorAll('.editable-about-card').forEach(card => {
+                card.classList.remove('edit-highlight');
+                const deleteBtn = card.querySelector('.card-delete-btn');
+                if (deleteBtn) deleteBtn.style.display = 'none';
+                const icon = card.querySelector('.editable-about-icon');
+                if (icon) {
+                    icon.style.cursor = '';
+                    icon.title = '';
+                }
+            });
+
+            // Hide service add/delete buttons
+            const addServiceBtn = document.getElementById('addServiceBtn');
+            if (addServiceBtn) addServiceBtn.style.display = 'none';
+            
+            document.querySelectorAll('.editable-service-card').forEach(card => {
+                card.classList.remove('edit-highlight');
+                const deleteBtn = card.querySelector('.card-delete-btn');
+                if (deleteBtn) deleteBtn.style.display = 'none';
+                const icon = card.querySelector('.editable-service-icon');
+                if (icon) {
+                    icon.style.cursor = '';
+                    icon.title = '';
+                }
+            });
+
+            // Hide project add/delete buttons
+            const addProjectBtn = document.getElementById('addProjectBtn');
+            if (addProjectBtn) addProjectBtn.style.display = 'none';
+            
+            document.querySelectorAll('.editable-project-card').forEach(card => {
+                card.classList.remove('edit-highlight');
+                const deleteBtn = card.querySelector('.card-delete-btn');
+                if (deleteBtn) deleteBtn.style.display = 'none';
+                const icon = card.querySelector('.editable-project-icon');
+                if (icon) {
+                    icon.style.cursor = '';
+                    icon.title = '';
+                }
+            });
+
+            const toggleIcon = adminToggle.querySelector('i');
+            if (toggleIcon) {
+                toggleIcon.className = 'fas fa-pen';
+            }
+
+            // Auto-save on exit
+            saveContent();
+        }
+
+        function resetContent() {
+            if (!confirm('¿Restablecer todo el contenido al original? Se perderán los cambios.')) return;
+            Object.entries(defaultContent).forEach(([field, value]) => {
+                const el = document.querySelector('[data-field="' + field + '"]');
+                if (el && field.endsWith('.tags')) {
+                    const container = el;
+                    if (container && container.classList.contains('project-tech')) {
+                        const tags = value.split(',').map(t => t.trim()).filter(t => t);
+                        container.innerHTML = tags.map(tag => '<span class="tech-tag">' + tag + '</span>').join('');
+                    }
+                } else if (el && field.includes('.icon')) {
+                    const icon = el.querySelector('i') || el;
+                    if (icon.tagName === 'I') {
+                        icon.className = 'fas ' + value;
+                    }
+                } else if (el) {
+                    if (el.querySelector('br') || value.includes('\\n')) {
+                        el.innerHTML = value.replace(/\\n/g, '<br>');
+                    } else {
+                        el.innerText = value;
+                    }
+                }
+            });
+            localStorage.removeItem('siteContent');
+            showNotification('Contenido restablecido', 'info');
+        }
+
+        // ==================== ABOUT CARDS MANAGEMENT ====================
+        function createAboutCard(index, icon, title, description) {
+            const card = document.createElement('div');
+            card.className = 'about-card editable-about-card';
+            card.setAttribute('data-about-index', index);
+            card.innerHTML = `
+                <button class="card-delete-btn" title="Eliminar tarjeta" style="display:none;">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <i class="fas ${icon} editable-about-icon"></i>
+                <h3 class="editable-text editable-about-title" data-field="about.${index}.title">${title}</h3>
+                <p class="editable-text editable-about-desc" data-field="about.${index}.description">${description}</p>
+            `;
+            return card;
+        }
+
+        function addAboutCard() {
+            const container = document.getElementById('aboutCardsContainer');
+            const index = container.children.length;
+            const card = createAboutCard(index, 'fa-star', 'Nueva Tarjeta', 'Descripción de esta tarjeta. Haz clic para editar el texto.');
+            container.appendChild(card);
+            
+            // Add delete event listener
+            const deleteBtn = card.querySelector('.card-delete-btn');
+            deleteBtn.addEventListener('click', () => {
+                if (confirm('¿Eliminar esta tarjeta?')) {
+                    card.remove();
+                    reindexAboutCards();
+                    saveContent();
+                }
+            });
+            
+            // Make new card elements editable if in edit mode
+            if (editMode) {
+                card.querySelectorAll('.editable-text').forEach(el => {
+                    el.classList.add('edit-highlight');
+                    el.contentEditable = 'true';
+                });
+                card.classList.add('edit-highlight');
+                deleteBtn.style.display = 'flex';
+            }
+            
+            saveContent();
+            showNotification('Tarjeta agregada', 'success');
+        }
+
+        function reindexAboutCards() {
+            const container = document.getElementById('aboutCardsContainer');
+            const cards = container.querySelectorAll('.editable-about-card');
+            cards.forEach((card, index) => {
+                card.setAttribute('data-about-index', index);
+            });
+        }
+
+        // Add About Card Button
+        document.getElementById('addAboutCardBtn').addEventListener('click', addAboutCard);
+
+        // Add delete listeners to existing about cards
+        document.querySelectorAll('.editable-about-card .card-delete-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const card = btn.closest('.editable-about-card');
+                if (confirm('¿Eliminar esta tarjeta?')) {
+                    card.remove();
+                    reindexAboutCards();
+                    saveContent();
+                }
+            });
+        });
+
+        // About card icon cycling
+        const aboutIcons = [
+            'fa-bullseye', 'fa-eye', 'fa-heart', 'fa-star', 'fa-home',
+            'fa-book', 'fa-graduation-cap', 'fa-users', 'fa-hand-holding-heart',
+            'fa-lightbulb', 'fa-rocket', 'fa-gem', 'fa-leaf', 'fa-globe',
+            'fa-puzzle-piece', 'fa-music'
+        ];
+
+        document.addEventListener('click', (e) => {
+            if (!editMode) return;
+            if (e.target.classList.contains('editable-about-icon')) {
+                const currentClass = e.target.className.replace('fas ', '').trim();
+                const currentIndex = aboutIcons.indexOf(currentClass);
+                const nextIndex = (currentIndex + 1) % aboutIcons.length;
+                e.target.className = 'fas ' + aboutIcons[nextIndex];
+                saveContent();
+            }
+            if (e.target.classList.contains('editable-service-icon')) {
+                const currentClass = e.target.className.replace('fas ', '').trim();
+                const currentIndex = aboutIcons.indexOf(currentClass);
+                const nextIndex = (currentIndex + 1) % aboutIcons.length;
+                e.target.className = 'fas ' + aboutIcons[nextIndex];
+                saveContent();
+            }
+            if (e.target.classList.contains('editable-project-icon')) {
+                const currentClass = e.target.className.replace('fas ', '').trim();
+                const currentIndex = aboutIcons.indexOf(currentClass);
+                const nextIndex = (currentIndex + 1) % aboutIcons.length;
+                e.target.className = 'fas ' + aboutIcons[nextIndex];
+                saveContent();
+            }
+        });
+
+        // ==================== SERVICE CARDS MANAGEMENT ====================
+        function createServiceCard(index, icon, title, description) {
+            const card = document.createElement('div');
+            card.className = 'course-card editable-service-card';
+            card.setAttribute('data-service-index', index);
+            card.innerHTML = `
+                <button class="card-delete-btn" title="Eliminar servicio" style="display:none;">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <i class="fas ${icon} editable-service-icon"></i>
+                <h3 class="editable-text editable-service-title" data-field="services.${index}.title">${title}</h3>
+                <p class="editable-text editable-service-desc" data-field="services.${index}.description">${description}</p>
+            `;
+            return card;
+        }
+
+        function addServiceCard() {
+            const container = document.getElementById('servicesGrid');
+            const index = container.children.length;
+            const card = createServiceCard(index, 'fa-star', 'Nuevo Servicio', 'Descripción del nuevo servicio. Haz clic para editar.');
+            container.appendChild(card);
+            
+            const deleteBtn = card.querySelector('.card-delete-btn');
+            deleteBtn.addEventListener('click', () => {
+                if (confirm('¿Eliminar este servicio?')) {
+                    card.remove();
+                    reindexServiceCards();
+                    saveContent();
+                }
+            });
+            
+            if (editMode) {
+                card.querySelectorAll('.editable-text').forEach(el => {
+                    el.classList.add('edit-highlight');
+                    el.contentEditable = 'true';
+                });
+                card.classList.add('edit-highlight');
+                deleteBtn.style.display = 'flex';
+                const icon = card.querySelector('.editable-service-icon');
+                if (icon) {
+                    icon.style.cursor = 'pointer';
+                    icon.title = 'Click para cambiar icono';
+                }
+            }
+            
+            saveContent();
+            showNotification('Servicio agregado', 'success');
+        }
+
+        function reindexServiceCards() {
+            const container = document.getElementById('servicesGrid');
+            const cards = container.querySelectorAll('.editable-service-card');
+            cards.forEach((card, index) => {
+                card.setAttribute('data-service-index', index);
+                const title = card.querySelector('.editable-service-title');
+                const desc = card.querySelector('.editable-service-desc');
+                if (title) title.setAttribute('data-field', 'services.' + index + '.title');
+                if (desc) desc.setAttribute('data-field', 'services.' + index + '.description');
+            });
+        }
+
+        // ==================== PROJECT CARDS MANAGEMENT ====================
+        function createProjectCard(index, icon, title, author, description, tags) {
+            const card = document.createElement('div');
+            card.className = 'project-card editable-project-card';
+            card.setAttribute('data-project-index', index);
+            card.innerHTML = `
+                <button class="card-delete-btn" title="Eliminar proyecto" style="display:none;">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <div class="project-content">
+                    <h3 class="editable-text editable-project-title" data-field="projects.${index}.title">${title}</h3>
+                    <p class="project-author editable-text editable-project-author" data-field="projects.${index}.author">${author}</p>
+                    <p class="project-description editable-text editable-project-desc" data-field="projects.${index}.description">${description}</p>
+                    <div class="project-tech editable-project-tags" data-field="projects.${index}.tags">
+                        ${tags.map(tag => '<span class="tech-tag">' + tag + '</span>').join('')}
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+
+        function addProjectCard() {
+            const container = document.getElementById('projectsGrid');
+            const index = container.children.length;
+            const card = createProjectCard(index, 'fa-folder', 'Nuevo Proyecto', 'Autor', 'Descripción del nuevo proyecto.', ['Nuevo']);
+            container.appendChild(card);
+            
+            const deleteBtn = card.querySelector('.card-delete-btn');
+            deleteBtn.addEventListener('click', () => {
+                if (confirm('¿Eliminar este proyecto?')) {
+                    card.remove();
+                    reindexProjectCards();
+                    saveContent();
+                }
+            });
+            
+            if (editMode) {
+                card.querySelectorAll('.editable-text').forEach(el => {
+                    el.classList.add('edit-highlight');
+                    el.contentEditable = 'true';
+                });
+                card.classList.add('edit-highlight');
+                deleteBtn.style.display = 'flex';
+                const icon = card.querySelector('.editable-project-icon');
+                if (icon) {
+                    icon.style.cursor = 'pointer';
+                    icon.title = 'Click para cambiar icono';
+                }
+            }
+            
+            saveContent();
+            showNotification('Proyecto agregado', 'success');
+        }
+
+        function reindexProjectCards() {
+            const container = document.getElementById('projectsGrid');
+            const cards = container.querySelectorAll('.editable-project-card');
+            cards.forEach((card, index) => {
+                card.setAttribute('data-project-index', index);
+                const title = card.querySelector('.editable-project-title');
+                const author = card.querySelector('.editable-project-author');
+                const desc = card.querySelector('.editable-project-desc');
+                const tags = card.querySelector('.editable-project-tags');
+                if (title) title.setAttribute('data-field', 'projects.' + index + '.title');
+                if (author) author.setAttribute('data-field', 'projects.' + index + '.author');
+                if (desc) desc.setAttribute('data-field', 'projects.' + index + '.description');
+                if (tags) tags.setAttribute('data-field', 'projects.' + index + '.tags');
+            });
+        }
+
+        // Add Service & Project Button Listeners
+        document.getElementById('addServiceBtn')?.addEventListener('click', addServiceCard);
+        document.getElementById('addProjectBtn')?.addEventListener('click', addProjectCard);
+
+        // Add delete listeners to existing service cards
+        document.querySelectorAll('.editable-service-card .card-delete-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const card = btn.closest('.editable-service-card');
+                if (confirm('¿Eliminar este servicio?')) {
+                    card.remove();
+                    reindexServiceCards();
+                    saveContent();
+                }
+            });
+        });
+
+        // Add delete listeners to existing project cards
+        document.querySelectorAll('.editable-project-card .card-delete-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const card = btn.closest('.editable-project-card');
+                if (confirm('¿Eliminar este proyecto?')) {
+                    card.remove();
+                    reindexProjectCards();
+                    saveContent();
+                }
+            });
+        });
+
+        // Toolbar buttons
+        toolbarSave.addEventListener('click', () => {
+            saveContent();
+            showNotification('Cambios guardados exitosamente', 'success');
+            exitEditMode();
+        });
+
+        toolbarReset.addEventListener('click', resetContent);
+        toolbarExit.addEventListener('click', exitEditMode);
+
+        // Toggle button
+        adminToggle.addEventListener('click', () => {
+            if (editMode) {
+                exitEditMode();
+            } else {
+                enterEditMode();
+            }
+        });
+
+        // Auto-save on input
+        document.addEventListener('input', (e) => {
+            if (!editMode) return;
+            if (e.target.classList.contains('editable-text')) {
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => {
+                    saveContent();
+                }, 1500);
+            }
+        });
+
+        // Save on blur (when user clicks away from editable text)
+        document.addEventListener('focusout', (e) => {
+            if (!editMode) return;
+            if (e.target.classList.contains('editable-text')) {
+                saveContent();
+            }
+        });
+
+        // Tooltip on hover
+        document.addEventListener('mouseover', (e) => {
+            if (!editMode) return;
+            if (e.target.classList.contains('editable-text') || e.target.closest('.editable-text')) {
+                const target = e.target.classList.contains('editable-text') ? e.target : e.target.closest('.editable-text');
+                const rect = target.getBoundingClientRect();
+                editTooltip.style.left = rect.left + rect.width / 2 - 50 + 'px';
+                editTooltip.style.top = rect.top - 30 + 'px';
+                editTooltip.textContent = 'Click para editar';
+                editTooltip.classList.add('show');
+            } else if (e.target.classList.contains('editable-about-icon') || e.target.classList.contains('editable-service-icon') || e.target.classList.contains('editable-project-icon')) {
+                const rect = e.target.getBoundingClientRect();
+                editTooltip.style.left = rect.left + rect.width / 2 - 50 + 'px';
+                editTooltip.style.top = rect.top - 30 + 'px';
+                editTooltip.textContent = 'Click para cambiar icono';
+                editTooltip.classList.add('show');
+            } else if (e.target.closest('.editable-service-card') || e.target.closest('.editable-project-card') || e.target.closest('.editable-about-card')) {
+                const target = e.target.closest('.editable-service-card') || e.target.closest('.editable-project-card') || e.target.closest('.editable-about-card');
+                const rect = target.getBoundingClientRect();
+                editTooltip.style.left = rect.left + rect.width / 2 - 50 + 'px';
+                editTooltip.style.top = rect.top - 30 + 'px';
+                editTooltip.textContent = 'Tarjeta editable';
+                editTooltip.classList.add('show');
+            } else if (e.target.closest('.card-delete-btn')) {
+                const rect = e.target.getBoundingClientRect();
+                editTooltip.style.left = rect.left + rect.width / 2 - 50 + 'px';
+                editTooltip.style.top = rect.top - 30 + 'px';
+                editTooltip.textContent = 'Eliminar tarjeta';
+                editTooltip.classList.add('show');
+            }
+        });
+
+        document.addEventListener('mouseout', (e) => {
+            if (e.target.classList.contains('editable-text') || e.target.closest('.editable-text') || 
+                e.target.closest('.editable-service-card') || e.target.closest('.editable-project-card')) {
+                editTooltip.classList.remove('show');
+            }
+        });
+
+        // Prevent navigation when editing
+        document.addEventListener('click', (e) => {
+            if (!editMode) return;
+            if (e.target.classList.contains('editable-text')) {
+                e.stopPropagation();
+            }
+        });
+
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        const themeIcon = themeToggle.querySelector('i');
+        const themeText = themeToggle.querySelector('span');
+
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            if (body.classList.contains('dark-mode')) {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+                themeText.textContent = 'Modo Claro';
+            } else {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+                themeText.textContent = 'Modo Oscuro';
+            }
+        });
+
+        // Mobile Menu Toggle
+        const hamburger = document.querySelector('.hamburger');
+        const navMenu = document.querySelector('.nav-menu');
+
+        hamburger.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        document.querySelectorAll('.nav-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+            });
+        });
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                if (editMode) {
+                    e.preventDefault();
+                    return;
+                }
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Header shadow on scroll
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 100) {
+                header.style.boxShadow = '0 4px 20px rgba(0,0,0,0.15)';
+            } else {
+                header.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && editMode) {
+                exitEditMode();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                if (editMode) {
+                    saveContent();
+                    showNotification('Cambios guardados', 'success');
+                }
+            }
+        });
+
+        // Save on page unload or tab switch
+        window.addEventListener('beforeunload', () => {
+            if (editMode) {
+                try {
+                    const config = buildConfig();
+                    const json = JSON.stringify(config);
+                    localStorage.setItem('siteContent', json);
+                    window.name = json;
+                    document.cookie = 'siteContent=' + encodeURIComponent(json) + '; path=/; max-age=' + (365 * 24 * 60 * 60);
+                } catch (e) {}
+            }
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden' && editMode) {
+                saveContent();
+            }
+        });
+
+        // Load saved content on page load
+        function checkLocalStorage() {
+            if (typeof localStorage === 'undefined') {
+                console.warn('localStorage is not available. Changes will not persist across page reloads.');
+                showNotification('Almacenamiento local no disponible. Ejecuta node simple-server.js para persistencia.', 'error');
+                return false;
+            }
+            try {
+                const testKey = '__storage_test__';
+                localStorage.setItem(testKey, '1');
+                localStorage.removeItem(testKey);
+                return true;
+            } catch (e) {
+                console.error('localStorage is not working:', e);
+                showNotification('Error: almacenamiento local bloqueado. Usa el servidor node simple-server.js', 'error');
+                return false;
+            }
+        }
+        
+        let localStorageAvailable = checkLocalStorage();
+        
+        function attemptLoad() {
+            if (localStorageAvailable) {
+                loadContent();
+            }
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', attemptLoad);
+        } else {
+            attemptLoad();
+        }
+        
+        window.addEventListener('load', () => {
+            if (document.readyState === 'complete') {
+                attemptLoad();
+            }
+        });
+        
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'siteContent' && e.newValue) {
+                try {
+                    const config = JSON.parse(e.newValue);
+                    applyConfigToDOM(config);
+                    console.log('Content synced from another tab');
+                } catch (err) {
+                    console.error('Error syncing content:', err);
+                }
+            }
+        });
+
+        // Try to apply theme from server config, fallback to localStorage
+        (async function applyThemeFromConfig() {
+            try {
+                const res = await fetch('/api/config');
+                if (res.ok) {
+                    const cfg = await res.json();
+                    if (cfg && cfg.defaultTheme === 'dark') {
+                        body.classList.add('dark-mode');
+                        themeIcon.classList.remove('fa-moon');
+                        themeIcon.classList.add('fa-sun');
+                        themeText.textContent = 'Modo Claro';
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not load remote config:', e);
+            }
+
+            const savedConfig = localStorage.getItem('siteConfig');
+            if (savedConfig) {
+                try {
+                    const config = JSON.parse(savedConfig);
+                    if (config.defaultTheme === 'dark') {
+                        body.classList.add('dark-mode');
+                        themeIcon.classList.remove('fa-moon');
+                        themeIcon.classList.add('fa-sun');
+                        themeText.textContent = 'Modo Claro';
+                    }
+                } catch (e) {
+                    console.error('Error loading config:', e);
+                }
+            }
+        })();
+    </script>
+</script>
+</body>
+</html>
